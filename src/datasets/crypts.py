@@ -81,7 +81,7 @@ class Crypts(torchvision.datasets.ImageFolder):
 
         Dataset wrapper (can copy data locally to machine)
 
-        :param root: root network directory for ImageNet data
+        :param root: root network directory for Crypts data
         :param image_folder: path to images inside root network directory
         :param tar_file: zipped image_folder inside root network directory # removed
         :param train: whether to load train data (or validation)
