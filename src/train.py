@@ -21,6 +21,7 @@ import copy
 import logging
 import sys
 import yaml
+import wandb
 
 import numpy as np
 
@@ -149,6 +150,9 @@ def main(args, resume_preempt=False):
     if load_model:
         load_path = os.path.join(folder, r_file) if r_file is not None else latest_path
 
+    # -- wandb logger
+    wandb.init()
+
     # -- make csv_logger
     csv_logger = CSVLogger(log_file,
                            ('%d', 'epoch'),
@@ -218,9 +222,11 @@ def main(args, resume_preempt=False):
         num_epochs=num_epochs,
         ipe_scale=ipe_scale,
         use_bfloat16=use_bfloat16)
-    encoder = DistributedDataParallel(encoder, static_graph=True)
-    predictor = DistributedDataParallel(predictor, static_graph=True)
-    target_encoder = DistributedDataParallel(target_encoder)
+    if world_size != 1:
+        encoder = DistributedDataParallel(encoder, static_graph=True)
+        predictor = DistributedDataParallel(predictor, static_graph=True)
+        target_encoder = DistributedDataParallel(target_encoder)
+
     for p in target_encoder.parameters():
         p.requires_grad = False
 
@@ -312,20 +318,24 @@ def main(args, resume_preempt=False):
                     loss = AllReduce.apply(loss)
                     return loss
 
-                # Step 1. Forward
-                with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
-                    h = forward_target()
-                    z = forward_context()
-                    loss = loss_fn(z, h)
-
-                #  Step 2. Backward & step
                 if use_bfloat16:
+                    # Step 1. Forward
+                    with torch.cuda.amp.autocast(dtype=torch.bfloat16, enabled=use_bfloat16):
+                        h = forward_target()
+                        z = forward_context()
+                        loss = loss_fn(z, h)
+
+                    #  Step 2. Backward & step
                     scaler.scale(loss).backward()
                     scaler.step(optimizer)
                     scaler.update()
                 else:
+                    h = forward_target()
+                    z = forward_context()
+                    loss = loss_fn(z, h)
                     loss.backward()
                     optimizer.step()
+
                 grad_stats = grad_logger(encoder.named_parameters())
                 optimizer.zero_grad()
 
@@ -342,6 +352,14 @@ def main(args, resume_preempt=False):
 
             # -- Logging
             def log_stats():
+                wandb.log({
+                            'epoch': epoch + 1,
+                            'iteration': itr,
+                            'loss': loss,
+                            'mask_A_metric': maskA_meter.val,
+                            'mask_B_metric': maskB_meter.val,
+                            'elapsed_time': etime,
+                        })
                 csv_logger.log(epoch + 1, itr, loss, maskA_meter.val, maskB_meter.val, etime)
                 if (itr % log_freq == 0) or np.isnan(loss) or np.isinf(loss):
                     logger.info('[%d, %5d] loss: %.3f '

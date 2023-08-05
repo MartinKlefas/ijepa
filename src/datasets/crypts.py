@@ -25,7 +25,7 @@ def make_Crypts(
     batch_size,
     collator=None,
     pin_mem=True,
-    num_workers=8,
+    num_workers=4,
     world_size=1,
     rank=0,
     root_path=None,
@@ -90,7 +90,7 @@ class Crypts(torchvision.datasets.ImageFolder):
         :param index_targets: whether to index the id of each labeled image
         """
 
-        suffix = 'restained/' if train else 'val/'
+        suffix = '' if train else 'val/'
         data_path = None
         if copy_data:
             raise Exception("copying data not implemented for this dataset")

@@ -2,3 +2,6 @@
 *.swo
 __pycache__
 .vs
+crypts
+logs
+wandb
