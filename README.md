@@ -1,7 +1,12 @@
 # I-JEPA
 
-Official PyTorch codebase for I-JEPA (the **Image-based Joint-Embedding Predictive Architecture**) published @ CVPR-23.
+Clone of PyTorch codebase for I-JEPA (the **Image-based Joint-Embedding Predictive Architecture**) published @ CVPR-23.
 [\[arXiv\]](https://arxiv.org/pdf/2301.08243.pdf) [\[JEPAs\]](https://ai.facebook.com/blog/yann-lecun-advances-in-ai-research/) [\[blogpost\]](https://ai.facebook.com/blog/yann-lecun-ai-model-i-jepa/)
+
+# Changes:
+I have modified the dataloader and some elements of the support code to allow me to import my own dataset, and to log training progress to wandb.ai
+
+The settings are all very low as I've only got 12GB VRAM and so the quality of the training is also likely to be low. This should not be used as a basis for your own code, as it'll make a rubbish model!
 
 ## Method
 I-JEPA is a method for self-supervised learning. At a high level, I-JEPA predicts the representations of part of an image from the representations of other parts of the same image. Notably, this approach learns semantic image features:
