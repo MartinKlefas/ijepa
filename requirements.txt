@@ -1,0 +1,7 @@
+runpod
+opencv-python-headless
+Pillow
+pyyaml
+numpy
+wandb
+python-dotenv

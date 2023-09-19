@@ -49,7 +49,9 @@ from src.helper import (
     init_model,
     init_opt)
 from src.transforms import make_transforms
+from dotenv import load_dotenv
 
+load_dotenv()
 # --
 log_timings = True
 log_freq = 10
@@ -151,7 +153,8 @@ def main(args, resume_preempt=False):
         load_path = os.path.join(folder, r_file) if r_file is not None else latest_path
 
     # -- wandb logger
-    wandb.init()
+    wandb.login(key=os.getenv("wandbkey"))
+    wandb.init(project="ijepa-runpod")
 
     # -- make csv_logger
     csv_logger = CSVLogger(log_file,

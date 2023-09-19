@@ -1,7 +1,9 @@
 *.swp
 *.swo
 __pycache__
-.vs
-crypts
-logs
-wandb
+.vs/
+crypts/
+logs/
+crypts/
+dockerfile
+.env
