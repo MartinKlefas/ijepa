@@ -3,7 +3,5 @@
 __pycache__
 .vs/
 crypts/
-logs/
-crypts/
 dockerfile
 .env
